@@ -1,0 +1,4 @@
+# Android SDK path (required)
+sdk.dir=C\:\\Android\\Sdk
+# TMDB API Read Access Token (optional; obtain from your TMDB account)
+TMDB_READ_TOKEN=
