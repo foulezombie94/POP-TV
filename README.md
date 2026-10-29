@@ -1,6 +1,6 @@
 # Pop TV
 
-Lanceur Android TV pour Freebox Pop, dérivé de tvhome et personnalisé avec accueil six colonnes, profils locaux, contrôle système, récupération Freebox et carrousel TMDB.
+Lanceur Android TV pour Freebox Pop, dérivé de poptv et personnalisé avec accueil six colonnes, profils locaux, contrôle système, récupération Freebox et carrousel TMDB.
 
 ## Construire
 

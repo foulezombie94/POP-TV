@@ -4,7 +4,7 @@
 
 > 🇬🇧 English: [PROMPTS.md](PROMPTS.md) · **النسخة الكاملة بأمر واحد:** [MASTER-PROMPT.ar.md](MASTER-PROMPT.ar.md)
 
-هذا هو دليل الأوامر النصية (prompt playbook) الذي بُني به tvhome. الصق كل أمر في وكيل البرمجة (coding agent) الذي تستخدمه (Claude
+هذا هو دليل الأوامر النصية (prompt playbook) الذي بُني به poptv. الصق كل أمر في وكيل البرمجة (coding agent) الذي تستخدمه (Claude
 Code أو Cursor أو Codex…) **بالترتيب**. كل أمر يمثّل مرحلة واحدة مركّزة. انتظر حتى يُتحقَّق من المرحلة
 على الجهاز قبل إرسال الأمر التالي.
 
@@ -25,7 +25,7 @@ Code أو Cursor أو Codex…) **بالترتيب**. كل أمر يمثّل م�
 
 ### المرحلة 1 — الهيكل الأولي للمُشغِّل
 ```
-أنشئ مُشغِّل واجهة (launcher) أصليًا لـ Android TV بلغة Kotlin مع Jetpack Compose (الحزمة com.hamad.tvhome، وminSdk 26).
+أنشئ مُشغِّل واجهة (launcher) أصليًا لـ Android TV بلغة Kotlin مع Jetpack Compose (الحزمة com.poptv.launcher، وminSdk 26).
 يجب أن يُسجَّل بصفتَي HOME وLEANBACK_LAUNCHER، وأن يعرض التطبيقات المثبّتة مع صور البانر الخاصة بها، وأن يعمل بسرعة على جهاز Android 9 بذاكرة 2 GB.
 ابنِ نسخة APK للإصدار (release) ‏(R8، وموقَّعة بمفتاح debug)، وثبّتها، واجعلها الشاشة الرئيسية الافتراضية، وعطِّل المُشغِّل الأصلي بطريقة قابلة للتراجع.
 ```

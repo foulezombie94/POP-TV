@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "com.hamad.tvhome"
+    namespace = "com.poptv.launcher"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.hamad.tvhome"
+        applicationId = "com.poptv.launcher"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

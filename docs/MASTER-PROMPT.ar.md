@@ -6,17 +6,17 @@
 
 انسخ الكتلة أدناه (استخدم زر النسخ الموجود أعلاها) والصقها في وكيل البرمجة بالذكاء الاصطناعي
 (AI coding agent) الذي تستخدمه: Claude Code أو Cursor أو Codex أو Windsurf أو Gemini CLI… فهي تحتوي
-على المواصفات الكاملة لمشروع tvhome. يبني الوكيل المشروع مرحلةً تلو الأخرى، ويتحقق من كل مرحلة على جهازك.
+على المواصفات الكاملة لمشروع poptv. يبني الوكيل المشروع مرحلةً تلو الأخرى، ويتحقق من كل مرحلة على جهازك.
 استبدل القيم الموجودة بين `<ANGLE_BRACKETS>` أولًا.
 
 ```text
-أنت مهندس Android TV خبير (senior) ومصمّم منتجات بمستوى Apple. ابنِ "tvhome": تجربة Apple TV ‏(tvOS 26) كاملة على جهاز Android TV عادي (TV box)، تشمل: مُشغِّل الواجهة (launcher)، وTop Shelf، وتطبيق البحث (Search)، وتطبيق الإعدادات (Settings)، ومركز التحكم (Control Center)، ومبدّل التطبيقات (App Switcher)، وشاشة التوقف الجوية (Aerial screensaver)، وشاشة توقف لمواقيت الصلاة. اعمل باستقلالية، مرحلةً تلو الأخرى، وتحقّق من كل مرحلة على الجهاز الحقيقي قبل الانتقال إلى التي تليها.
+أنت مهندس Android TV خبير (senior) ومصمّم منتجات بمستوى Apple. ابنِ "poptv": تجربة Apple TV ‏(tvOS 26) كاملة على جهاز Android TV عادي (TV box)، تشمل: مُشغِّل الواجهة (launcher)، وTop Shelf، وتطبيق البحث (Search)، وتطبيق الإعدادات (Settings)، ومركز التحكم (Control Center)، ومبدّل التطبيقات (App Switcher)، وشاشة التوقف الجوية (Aerial screensaver)، وشاشة توقف لمواقيت الصلاة. اعمل باستقلالية، مرحلةً تلو الأخرى، وتحقّق من كل مرحلة على الجهاز الحقيقي قبل الانتقال إلى التي تليها.
 
 ═══════════════════════════════════════════════
 0. السياق والقيود
 ═══════════════════════════════════════════════
 - الجهاز المستهدف: جهاز Android TV يمكن الوصول إليه عبر adb على العنوان <BOX_ADB_SERIAL_OR_IP:5555>. افترض أسوأ الحالات: Android 9 ‏(API 28)، وذاكرة RAM بسعة 2 GB، ومعالج رسوميات low-end GPU GPU، ومعمارية armeabi-v7a، ودقة 1920x1080 بكثافة 320 dpi ‏(1 dp = 2 px)، ولغة نظام عربية باتجاه من اليمين إلى اليسار (RTL)، ولا توجد بطارية لساعة الوقت الحقيقي (RTC).
-- حزمة التقنيات (Stack): Kotlin 2.x مع Jetpack Compose (مكتبة foundation فقط)، ووحدة :app واحدة، والحزمة com.hamad.tvhome (أو <YOUR_PACKAGE>)، وminSdk 26، وtargetSdk 34، وcompileSdk 36. المكتبات: androidx core/activity-compose، وCompose BOM، وMedia3 ExoPlayer، وCoil 3 (+ okhttp network)، وOkHttp 4، وkotlinx-coroutines، وJUnit 4. يُمنع استخدام مكوّنات Material / material3 / tv-material منعًا باتًا.
+- حزمة التقنيات (Stack): Kotlin 2.x مع Jetpack Compose (مكتبة foundation فقط)، ووحدة :app واحدة، والحزمة com.poptv.launcher (أو <YOUR_PACKAGE>)، وminSdk 26، وtargetSdk 34، وcompileSdk 36. المكتبات: androidx core/activity-compose، وCompose BOM، وMedia3 ExoPlayer، وCoil 3 (+ okhttp network)، وOkHttp 4، وkotlinx-coroutines، وJUnit 4. يُمنع استخدام مكوّنات Material / material3 / tv-material منعًا باتًا.
 - البناء: JDK 21 ‏(Android Studio JBR). ثبّت دائمًا نسخة الإصدار (RELEASE build) ‏(R8 minify + shrink، وموقَّعة بمفتاح debug)؛ فنسخة Compose القابلة للتصحيح (debuggable) بطيئة جدًا على هذا العتاد.
 - الأسرار (Secrets): رمز القراءة (read token) الخاص بـ TMDB يوضع فقط في ملف local.properties المستثنى من git ‏(TMDB_READ_TOKEN) → حقل في BuildConfig. لا تُودِعه في المستودع (commit) ولا تطبعه أبدًا.
 - بيانات حقيقية فقط. لا تخترع أرقامًا ولا محتوى مؤقتًا (placeholder) أبدًا؛ وأخفِ العنصر عندما تكون بياناته غير متاحة.

@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "tvhome"
+rootProject.name = "poptv"
 include(":app")

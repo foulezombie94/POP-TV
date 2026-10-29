@@ -1,10 +1,10 @@
 <div dir="rtl">
 
-# tvhome — تجربة Apple TV ‏(tvOS) على جهاز Android TV
+# poptv — تجربة Apple TV ‏(tvOS) على جهاز Android TV
 
 > 🇬🇧 English: [README.md](README.md)
 
-يستبدل **tvhome** مُشغِّل الواجهة (launcher) في أي جهاز Android TV عادي بنظام متكامل على طراز Apple TV:
+يستبدل **poptv** مُشغِّل الواجهة (launcher) في أي جهاز Android TV عادي بنظام متكامل على طراز Apple TV:
 الشاشة الرئيسية، وTop Shelf، والبحث، والإعدادات، ومركز التحكم (Control Center)، ومبدِّل التطبيقات (App Switcher)، وشاشة التوقف
 الجوية (Aerial screensaver) الخاصة بـ Apple. ويضم المشروع أيضًا شاشة توقف لمواقيت الصلاة في بغداد. كل شيء مكتوب بشكل أصلي (native)
 بلغة Kotlin مع Jetpack Compose، ومصمَّم وفق إرشادات الواجهة البشرية (Human Interface Guidelines) الرسمية لـ tvOS،
@@ -68,7 +68,7 @@
 ## 1 · البناء (Build)
 
 ```bash
-git clone <this repo> tvhome && cd tvhome
+git clone <this repo> poptv && cd poptv
 
 # local.properties is git-ignored — create it:
 cat > local.properties <<'EOF'
@@ -99,7 +99,7 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 ### اجعله الشاشة الرئيسية
 
 ```bash
-adb shell cmd package set-home-activity com.hamad.tvhome/.MainActivity
+adb shell cmd package set-home-activity com.poptv.launcher/.MainActivity
 # The stock Google TV launcher outranks third-party launchers — disable it (reversible):
 adb shell pm disable-user --user 0 com.google.android.tvlauncher
 adb shell input keyevent KEYCODE_HOME
@@ -111,16 +111,16 @@ adb shell input keyevent KEYCODE_HOME
 
 ```bash
 adb shell settings put secure enabled_accessibility_services \
-  com.hamad.tvhome/com.hamad.tvhome.system.SystemUiService
+  com.poptv.launcher/com.poptv.launcher.system.SystemUiService
 adb shell settings put secure accessibility_enabled 1
-adb shell appops set com.hamad.tvhome GET_USAGE_STATS allow      # recent apps for the switcher
+adb shell appops set com.poptv.launcher GET_USAGE_STATS allow      # recent apps for the switcher
 ```
 
 ### أذونات تطبيق الإعدادات (ليتمكّن من تغيير الإعدادات مباشرة)
 
 ```bash
-adb shell pm grant com.hamad.tvhome android.permission.WRITE_SECURE_SETTINGS
-adb shell appops set com.hamad.tvhome WRITE_SETTINGS allow
+adb shell pm grant com.poptv.launcher android.permission.WRITE_SECURE_SETTINGS
+adb shell appops set com.poptv.launcher WRITE_SETTINGS allow
 ```
 
 ### اختيار شاشة التوقف
@@ -128,9 +128,9 @@ adb shell appops set com.hamad.tvhome WRITE_SETTINGS allow
 ```bash
 # Prayer Times dashboard (over Aerial video):
 adb shell settings put secure screensaver_components \
-  com.hamad.tvhome/com.hamad.tvhome.dashboard.PrayerDashboardDream
+  com.poptv.launcher/com.poptv.launcher.dashboard.PrayerDashboardDream
 # …or plain Aerial:
-# com.hamad.tvhome/com.hamad.tvhome.aerial.AerialDreamService
+# com.poptv.launcher/com.poptv.launcher.aerial.AerialDreamService
 adb shell settings put secure screensaver_enabled 1
 
 # Preview it now:
@@ -181,7 +181,7 @@ adb shell settings put global ntp_server 162.159.200.123   # time.cloudflare.com
 ## 5 · بنية المشروع
 
 ```
-app/src/main/java/com/hamad/tvhome/
+app/src/main/java/com/poptv/launcher/
 ├── design/      tvOS design kit: TvType (HIG type scale), TvColors, TvDims, LiquidGlass, TvButton/TvRow
 ├── ui/ home/    Home screen: tab bar, hero carousel, rows, app grid, focus motion, content repository
 ├── search/      Search app: linear keyboard, results, product page
@@ -247,7 +247,7 @@ docs/PROMPTS.md    the prompt playbook to rebuild this with an LLM (also PROMPTS
 ```bash
 adb shell pm enable com.google.android.tvlauncher
 adb shell settings put secure enabled_accessibility_services ""
-adb uninstall com.hamad.tvhome
+adb uninstall com.poptv.launcher
 # packages removed with "pm uninstall --user 0 <pkg>" come back with:
 adb shell cmd package install-existing <pkg>
 ```

@@ -90,7 +90,7 @@ Search use Compose focus (`focusRequester`, `clickable`).
 S=<adb serial or ip:5555>
 adb -s $S install -r app/build/outputs/apk/release/app-release.apk
 # Reinstall unbinds the accessibility service — always re-enable:
-adb -s $S shell 'settings put secure enabled_accessibility_services com.hamad.tvhome/com.hamad.tvhome.system.SystemUiService; settings put secure accessibility_enabled 1'
+adb -s $S shell 'settings put secure enabled_accessibility_services com.poptv.launcher/com.poptv.launcher.system.SystemUiService; settings put secure accessibility_enabled 1'
 adb -s $S shell input keyevent KEYCODE_HOME
 adb -s $S exec-out screencap -p > /tmp/shot.png      # then look at it
 ```
@@ -98,7 +98,7 @@ adb -s $S exec-out screencap -p > /tmp/shot.png      # then look at it
 Performance check (required for any UI change):
 
 ```bash
-adb -s $S shell 'dumpsys gfxinfo com.hamad.tvhome reset; sleep 5; dumpsys gfxinfo com.hamad.tvhome | grep -E "Total frames|Janky|90th|99th"'
+adb -s $S shell 'dumpsys gfxinfo com.poptv.launcher reset; sleep 5; dumpsys gfxinfo com.poptv.launcher | grep -E "Total frames|Janky|90th|99th"'
 # idle target: ~0 frames · navigation target: janky < 15 %, p90 ≤ 20 ms
 ```
 
@@ -106,7 +106,7 @@ Traps that look like bugs but aren't:
 
 | Trap | What to do |
 |---|---|
-| `am force-stop com.hamad.tvhome` silently turns accessibility off | Re-enable it as above |
+| `am force-stop com.poptv.launcher` silently turns accessibility off | Re-enable it as above |
 | Accessibility service enabled but `dumpsys accessibility` shows `services:{}` | A stale binding: `adb reboot` |
 | `adb shell input keyevent` never reaches the Home-key router | Injected keys skip the a11y filter. Test long/double Home on the real remote, or with `uinput` on an emulator |
 | Screenshots of the screensaver show black video | Hardware video plane; only the overlay is captured. Use an emulator to see video frames |

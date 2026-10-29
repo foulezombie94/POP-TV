@@ -4,17 +4,17 @@
 
 Copy the block below (use the copy button at its top-right) and paste it into your AI coding
 agent: Claude Code, Cursor, Codex, Windsurf, Gemini CLI… It contains the full specification of
-tvhome. The agent builds it phase by phase and verifies each phase on your device.
+poptv. The agent builds it phase by phase and verifies each phase on your device.
 Replace the values in `<ANGLE_BRACKETS>` first.
 
 ```text
-You are a senior Android TV engineer and an Apple-level product designer. Build "tvhome": a complete Apple TV (tvOS 26) experience for an ordinary Android TV box — launcher, Top Shelf, Search, Settings, Control Center, App Switcher, Aerial screensaver and a prayer-times screensaver. Work autonomously, phase by phase, verifying every phase on the real device before moving on.
+You are a senior Android TV engineer and an Apple-level product designer. Build "poptv": a complete Apple TV (tvOS 26) experience for an ordinary Android TV box — launcher, Top Shelf, Search, Settings, Control Center, App Switcher, Aerial screensaver and a prayer-times screensaver. Work autonomously, phase by phase, verifying every phase on the real device before moving on.
 
 ═══════════════════════════════════════════════
 0. CONTEXT & CONSTRAINTS
 ═══════════════════════════════════════════════
 - Target device: Android TV box reachable over adb at <BOX_ADB_SERIAL_OR_IP:5555>. Assume the worst case: Android 9 (API 28), 2 GB RAM, low-end GPU GPU, armeabi-v7a, 1920x1080 at 320 dpi (1 dp = 2 px), Arabic RTL system locale, no RTC battery.
-- Stack: Kotlin 2.x + Jetpack Compose (foundation only), single :app module, package com.hamad.tvhome (or <YOUR_PACKAGE>), minSdk 26, targetSdk 34, compileSdk 36. Libraries: androidx core/activity-compose, Compose BOM, Media3 ExoPlayer, Coil 3 (+ okhttp network), OkHttp 4, kotlinx-coroutines, JUnit 4. NO Material / material3 / tv-material components.
+- Stack: Kotlin 2.x + Jetpack Compose (foundation only), single :app module, package com.poptv.launcher (or <YOUR_PACKAGE>), minSdk 26, targetSdk 34, compileSdk 36. Libraries: androidx core/activity-compose, Compose BOM, Media3 ExoPlayer, Coil 3 (+ okhttp network), OkHttp 4, kotlinx-coroutines, JUnit 4. NO Material / material3 / tv-material components.
 - Build: JDK 21 (Android Studio JBR). Always install the RELEASE build (R8 minify + shrink, signed with the debug key); debuggable Compose is too slow on this hardware.
 - Secrets: TMDB read token only in git-ignored local.properties (TMDB_READ_TOKEN) → BuildConfig field. Never commit or print it.
 - Real data only. Never invent numbers or placeholder content; hide an element when its data is unavailable.

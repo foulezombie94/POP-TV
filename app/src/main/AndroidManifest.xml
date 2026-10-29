@@ -31,7 +31,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="Pop TV"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TvHome">
+        android:theme="@style/Theme.PopTv">
 
         <activity
             android:name=".MainActivity"
@@ -62,7 +62,7 @@
         <activity android:name=".recovery.RecoveryActivity" android:exported="true"
             android:label="Retour accueil Free" android:screenOrientation="landscape" />
         <activity android:name=".system.ControlCenterActivity" android:exported="false"
-            android:theme="@style/Theme.TvHomeOverlay" android:screenOrientation="landscape" />
+            android:theme="@style/Theme.PopTvOverlay" android:screenOrientation="landscape" />
 
         <!-- tvOS Settings. Launched from the home screen's Settings tile. -->
         <activity
@@ -70,7 +70,7 @@
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density|fontScale"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:taskAffinity="com.hamad.tvhome.settings" />
+            android:taskAffinity="com.poptv.launcher.settings" />
 
         <!-- tvOS Search with the linear keyboard. -->
         <activity
@@ -78,7 +78,7 @@
             android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|smallestScreenSize|uiMode|density|fontScale"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:taskAffinity="com.hamad.tvhome.search"
+            android:taskAffinity="com.poptv.launcher.search"
             android:windowSoftInputMode="stateAlwaysHidden" />
 
         <!-- System-wide tvOS chrome: Control Center + App Switcher, drawn as accessibility overlays. -->

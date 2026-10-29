@@ -92,7 +92,7 @@
 S=<adb serial or ip:5555>
 adb -s $S install -r app/build/outputs/apk/release/app-release.apk
 # Reinstall unbinds the accessibility service — always re-enable:
-adb -s $S shell 'settings put secure enabled_accessibility_services com.hamad.tvhome/com.hamad.tvhome.system.SystemUiService; settings put secure accessibility_enabled 1'
+adb -s $S shell 'settings put secure enabled_accessibility_services com.poptv.launcher/com.poptv.launcher.system.SystemUiService; settings put secure accessibility_enabled 1'
 adb -s $S shell input keyevent KEYCODE_HOME
 adb -s $S exec-out screencap -p > /tmp/shot.png      # then look at it
 ```
@@ -100,7 +100,7 @@ adb -s $S exec-out screencap -p > /tmp/shot.png      # then look at it
 فحص الأداء (إلزامي لأي تغيير في الواجهة):
 
 ```bash
-adb -s $S shell 'dumpsys gfxinfo com.hamad.tvhome reset; sleep 5; dumpsys gfxinfo com.hamad.tvhome | grep -E "Total frames|Janky|90th|99th"'
+adb -s $S shell 'dumpsys gfxinfo com.poptv.launcher reset; sleep 5; dumpsys gfxinfo com.poptv.launcher | grep -E "Total frames|Janky|90th|99th"'
 # idle target: ~0 frames · navigation target: janky < 15 %, p90 ≤ 20 ms
 ```
 
@@ -108,7 +108,7 @@ adb -s $S shell 'dumpsys gfxinfo com.hamad.tvhome reset; sleep 5; dumpsys gfxinf
 
 | الفخ | ماذا تفعل |
 |---|---|
-| الأمر `am force-stop com.hamad.tvhome` يُطفئ إمكانية الوصول بصمت | أعِد تفعيلها كما في الأعلى |
+| الأمر `am force-stop com.poptv.launcher` يُطفئ إمكانية الوصول بصمت | أعِد تفعيلها كما في الأعلى |
 | خدمة إمكانية الوصول مفعّلة لكن `dumpsys accessibility` يُظهر `services:{}` | ربط قديم عالق (stale binding): نفِّذ `adb reboot` |
 | الأمر `adb shell input keyevent` لا يصل أبدًا إلى موجِّه زر Home | المفاتيح المُحقَنة تتجاوز مُرشِّح إمكانية الوصول (a11y). اختبر الضغطة المطوّلة/المزدوجة على Home بجهاز التحكم الحقيقي، أو باستخدام `uinput` على المحاكي |
 | لقطات شاشة التوقف تُظهر الفيديو أسود | طبقة الفيديو العتادية؛ لا يُلتقَط إلا ما فوقها. استخدم محاكيًا لرؤية إطارات الفيديو |

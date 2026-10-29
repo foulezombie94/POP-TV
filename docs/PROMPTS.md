@@ -2,7 +2,7 @@
 
 > 🇸🇦 العربية: [PROMPTS.ar.md](PROMPTS.ar.md) · **One-shot version:** [MASTER-PROMPT.md](MASTER-PROMPT.md)
 
-This is the prompt playbook behind tvhome. Paste each prompt into your coding agent (Claude
+This is the prompt playbook behind poptv. Paste each prompt into your coding agent (Claude
 Code, Cursor, Codex…) **in order**. Each one is a single focused phase. Wait for the phase to be
 verified on the device before sending the next.
 
@@ -23,7 +23,7 @@ Find my Android TV box on the network/adb and tell me its Android version, resol
 
 ### Phase 1 — Skeleton launcher
 ```
-Create a native Kotlin + Jetpack Compose Android TV launcher (package com.hamad.tvhome, minSdk 26).
+Create a native Kotlin + Jetpack Compose Android TV launcher (package com.poptv.launcher, minSdk 26).
 It must register as HOME + LEANBACK_LAUNCHER, list installed apps with their banners, and run fast on a 2 GB Android 9 box.
 Build a release APK (R8, debug-signed), install it, set it as the default home, and disable the stock launcher reversibly.
 ```
