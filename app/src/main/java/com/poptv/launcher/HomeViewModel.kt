@@ -11,21 +11,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.poptv.launcher.home.Bar
-import com.poptv.launcher.home.ContentRepository
-import com.poptv.launcher.home.HeroItem
-import com.poptv.launcher.home.Providers
-import com.poptv.launcher.home.ShelfCursor
-import com.poptv.launcher.home.ShelfNav
-import com.poptv.launcher.home.Tab
-import com.poptv.launcher.home.TabPage
-import com.poptv.launcher.home.Title
-import com.poptv.launcher.home.Zone
-import com.poptv.launcher.prefs.LauncherPrefs
-import com.poptv.launcher.prefs.LauncherSettings
-import com.poptv.launcher.search.SearchActivity
-import com.poptv.launcher.settings.SettingsActivity
-import com.poptv.launcher.tmdb.TmdbClient
+import com.poptv.launcher.features.home.domain.Bar
+import com.poptv.launcher.features.home.domain.ContentRepository
+import com.poptv.launcher.features.home.domain.HeroItem
+import com.poptv.launcher.features.home.domain.Providers
+import com.poptv.launcher.features.home.domain.ShelfCursor
+import com.poptv.launcher.features.home.domain.ShelfNav
+import com.poptv.launcher.features.home.domain.Tab
+import com.poptv.launcher.features.home.domain.TabPage
+import com.poptv.launcher.features.home.domain.Title
+import com.poptv.launcher.features.home.domain.Zone
+import com.poptv.launcher.core.prefs.LauncherPrefs
+import com.poptv.launcher.core.prefs.LauncherSettings
+import com.poptv.launcher.features.search.SearchActivity
+import com.poptv.launcher.features.settings.SettingsActivity
+import com.poptv.launcher.data.tmdb.TmdbClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -57,7 +57,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = LauncherPrefs.get(app)
     private val tmdb = TmdbClient.get(app)
     private val content = ContentRepository(tmdb)
-    var carousel by mutableStateOf<List<com.poptv.launcher.tmdb.TmdbItem>>(emptyList())
+    var carousel by mutableStateOf<List<com.poptv.launcher.data.tmdb.TmdbItem>>(emptyList())
         private set
     var appsReady by mutableStateOf(false)
         private set
@@ -67,7 +67,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private fun loadCarousel() {
         val now = android.os.SystemClock.elapsedRealtime()
         if (carouselLoad?.isActive == true || carouselAttempt?.let {
-            now - it < com.poptv.launcher.tmdb.CarouselPolicy.RETRY_MS
+            now - it < com.poptv.launcher.data.tmdb.CarouselPolicy.RETRY_MS
         } == true) return
         carouselAttempt = now
         carouselLoad = viewModelScope.launch { carousel = tmdb.homeCarousel() }
@@ -115,7 +115,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     private var region: String = settings.contentRegion
     private val loads = HashMap<Tab, Job>()
     private var nudgeSeq = 0L
-    private var activeProfile = com.poptv.launcher.prefs.ProfileStore.get(app).state.value.activeId
+    private var activeProfile = com.poptv.launcher.core.prefs.ProfileStore.get(app).state.value.activeId
     private var appReload: Job? = null
 
     init {
@@ -153,7 +153,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     fun onResume() {
         resumed = true
         if (appsReady) loadCarousel()
-        val profile = com.poptv.launcher.prefs.ProfileStore.get(getApplication()).state.value.activeId
+        val profile = com.poptv.launcher.core.prefs.ProfileStore.get(getApplication()).state.value.activeId
         if (profile != activeProfile) {
             activeProfile = profile
             pages.getValue(Tab.Apps).gridFocus = 0
@@ -292,7 +292,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         val s = sheet
         when {
             s != null -> runSheetAction(s.actions[s.focus], s.app)
-            profileFocused -> launch("profile", Intent(getApplication(), com.poptv.launcher.system.ControlCenterActivity::class.java)
+            profileFocused -> launch("profile", Intent(getApplication(), com.poptv.launcher.features.control.ControlCenterActivity::class.java)
                 .putExtra("profiles", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             editing -> finishEditing()
             p.row == Zone.BAR -> selectInBar(p)

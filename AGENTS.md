@@ -16,4 +16,4 @@ Compiler la variante de production avec `./gradlew :app:assembleRelease`. Pour l
 
 ## Organisation du code
 
-L’application est dans `app/`. Les sources Kotlin utilisent le package `com.poptv.launcher`. Les règles de navigation et de disposition sont séparées de l’interface ; la configuration privée reste locale et ignorée par Git.
+L’application est dans `app/`. Les sources Kotlin utilisent `com.poptv.launcher` et sont classées par noyau (`core`), fonctionnalités (`features`), données (`data`) et intégration Android (`platform`). Les règles de navigation et de disposition sont séparées de l’interface ; la configuration privée reste locale et ignorée par Git.

@@ -8,8 +8,8 @@ import android.content.pm.ResolveInfo
 import android.util.Log
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.ContextCompat
-import com.poptv.launcher.search.SearchActivity
-import com.poptv.launcher.settings.SettingsActivity
+import com.poptv.launcher.features.search.SearchActivity
+import com.poptv.launcher.features.settings.SettingsActivity
 
 class AppRepository(private val context: Context) {
     private val pm: PackageManager = context.packageManager

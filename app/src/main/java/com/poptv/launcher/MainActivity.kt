@@ -18,10 +18,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.poptv.launcher.home.ClickSound
-import com.poptv.launcher.home.ShelfImages
-import com.poptv.launcher.prefs.LauncherPrefs
-import com.poptv.launcher.ui.HomeScreen
+import com.poptv.launcher.features.home.domain.ClickSound
+import com.poptv.launcher.features.home.domain.ShelfImages
+import com.poptv.launcher.core.prefs.LauncherPrefs
+import com.poptv.launcher.features.home.ui.HomeScreen
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (application as? com.poptv.launcher.recovery.PopApplication)?.startingHome()
+        (application as? com.poptv.launcher.platform.recovery.PopApplication)?.startingHome()
         ShelfImages.install()
         click = ClickSound(this)
         registerReceiver(
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
         val root = window.decorView
         root.viewTreeObserver.addOnPreDrawListener(object : android.view.ViewTreeObserver.OnPreDrawListener {
             override fun onPreDraw(): Boolean {
-                val ready = com.poptv.launcher.home.StartupPolicy.mayDraw(vm.appsReady,
+                val ready = com.poptv.launcher.features.home.domain.StartupPolicy.mayDraw(vm.appsReady,
                     android.os.SystemClock.elapsedRealtime() - firstFrameStart)
                 if (ready) root.viewTreeObserver.removeOnPreDrawListener(this)
                 return ready
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == Intent.ACTION_ALL_APPS) {
-            startActivity(Intent(this, com.poptv.launcher.settings.SettingsActivity::class.java))
+            startActivity(Intent(this, com.poptv.launcher.features.settings.SettingsActivity::class.java))
             return
         }
         if (intent.hasCategory(Intent.CATEGORY_HOME)) vm.onHome()

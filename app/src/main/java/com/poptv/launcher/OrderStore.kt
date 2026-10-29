@@ -5,7 +5,7 @@ import android.content.Context
 /** Persists the user's arrangement. Apps it has never seen are appended in a sensible default order. */
 class OrderStore(private val context: Context) {
     private val prefs get() = context.getSharedPreferences(
-        com.poptv.launcher.prefs.ProfileStore.get(context).state.value.activeId.let {
+        com.poptv.launcher.core.prefs.ProfileStore.get(context).state.value.activeId.let {
             if (it == "main") "home" else "home_$it"
         }, Context.MODE_PRIVATE)
 

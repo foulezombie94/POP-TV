@@ -22,12 +22,12 @@ L’APK est produit dans `app/build/outputs/apk/release/`.
 
 ## Structure
 
-- `app/src/main/java/com/poptv/launcher/ui` : accueil, grille et carrousel
-- `home` : navigation et règles de disposition
-- `tmdb` : accès aux tendances et cache du carrousel
-- `prefs` : préférences et profils locaux
-- `settings` : réglages de l’appareil et du lanceur
-- `system` : centre de contrôle et routage des touches
-- `recovery` : retour au lanceur Free en cas de problème
+- `features/home/ui` et `features/home/domain` : accueil, navigation et grille
+- `features/search` et `features/settings` : écrans de recherche et réglages
+- `features/control` : centre de contrôle, profils et touches de la télécommande
+- `features/screensaver` : économiseurs d’écran Aerial et horaires
+- `data/tmdb` : tendances TMDB et cache du carrousel
+- `core` : design partagé, préférences, profils et logique hors ligne
+- `platform/recovery` : retour au lanceur Free en cas de problème
 
 Le projet contient des composants et dépendances provenant d’autres projets. Leurs avis de licence et attributions doivent être conservés. Consultez les licences des bibliothèques dans leurs distributions respectives.
