@@ -21,7 +21,6 @@ android {
         versionCode = 1
         versionName = "1.4.2-pop-stable-scroll"
         resourceConfigurations += setOf("en", "fr")
-        buildConfigField("String", "INSTAGRAM_HANDLE", "\"${localProps.getProperty("INSTAGRAM_HANDLE", "")}\"")
         buildConfigField("String", "TMDB_READ_TOKEN", "\"${localProps.getProperty("TMDB_READ_TOKEN", "")}\"")
         // Lets parallel worktrees install side by side on one emulator: -PidSuffix=.cc
         providers.gradleProperty("idSuffix").orNull?.let { applicationIdSuffix = it }

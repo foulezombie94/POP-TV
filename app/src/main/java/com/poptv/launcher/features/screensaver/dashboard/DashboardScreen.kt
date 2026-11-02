@@ -50,8 +50,6 @@ private object Ink {
     val Tertiary = Color.White.copy(alpha = 0.58f)
     val Passed = Color.White.copy(alpha = 0.40f)
     val Track = Color.White.copy(alpha = 0.22f)
-    val Up = Color(0xFF30D158)
-    val Down = Color(0xFFFF453A)
     val ScrimTop = Color.Black.copy(alpha = 0.55f)
     val ScrimBottom = Color.Black.copy(alpha = 0.78f)
     val TextShadow = Shadow(Color.Black.copy(alpha = 0.45f), Offset(0f, 2f), 12f)
@@ -106,7 +104,6 @@ private object Scale {
 data class DashboardState(
     val moment: DashboardMoment,
     val weather: List<CityWeather>,
-    val instagram: InstagramStats?,
     /** Burn-in guard: the whole layout drifts a few dp each minute. */
     val shift: Pair<Dp, Dp>,
 )
@@ -127,7 +124,6 @@ fun DashboardScreen(state: DashboardState) {
                     .padding(horizontal = TvDims.SafeH, vertical = TvDims.SafeV),
             ) {
                 ClockBlock(state, Modifier.align(Alignment.TopStart))
-                state.instagram?.let { InstagramBlock(it, Modifier.align(Alignment.TopEnd)) }
                 Column(Modifier.align(Alignment.BottomStart).fillMaxWidth()) {
                     BasicText("مواقيت الصلاة · بغداد", style = Scale.RowTitle)
                     Spacer(Modifier.height(14.dp))
@@ -138,10 +134,7 @@ fun DashboardScreen(state: DashboardState) {
     }
 }
 
-/*
- * The two top blocks mirror each other line for line: a 44sp figure, then two 15sp lines.
- * Same styles, same spacing, so the band reads as one calm row across the screen.
- */
+/** The top block: a 44sp clock, then the date and the weather as two 15sp lines. */
 @Composable
 private fun ClockBlock(state: DashboardState, modifier: Modifier) {
     val m = state.moment
@@ -161,59 +154,6 @@ private fun ClockBlock(state: DashboardState, modifier: Modifier) {
                 BasicText("${ArabicText.degrees(w.currentTemp)}  ${condition(w.currentCode)}", style = Scale.Line)
             }
         }
-    }
-}
-
-@Composable
-private fun InstagramBlock(ig: InstagramStats, modifier: Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(BLOCK_GAP)) {
-        Row(verticalAlignment = Alignment.Bottom) {
-            BasicText(ArabicText.followers(ig.followers, ig.followersExact), style = Scale.Clock)
-            Spacer(Modifier.width(8.dp))
-            BasicText("متابع", style = Scale.Meridiem, modifier = Modifier.padding(bottom = 8.dp))
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            InstagramGlyph(15.dp)
-            Spacer(Modifier.width(8.dp))
-            BasicText(ig.handle, style = Scale.Line.copy(textDirection = androidx.compose.ui.text.style.TextDirection.Ltr))
-        }
-        val change = ig.change24h
-        val detail = when {
-            change != null && change > 0 -> "▲ ${ArabicText.grouped(change)} خلال ٢٤ ساعة"
-            change != null && change < 0 -> "▼ ${ArabicText.grouped(-change)} خلال ٢٤ ساعة"
-            ig.posts != null -> "${ArabicText.grouped(ig.posts)} منشورًا"
-            else -> null
-        }
-        detail?.let {
-            BasicText(
-                it,
-                style = Scale.Line.copy(
-                    color = when {
-                        change != null && change > 0 -> Ink.Up
-                        change != null && change < 0 -> Ink.Down
-                        else -> Ink.Secondary
-                    },
-                ),
-            )
-        }
-    }
-}
-
-/** Instagram's camera glyph as a white outline: rounded square, lens, flash dot. */
-@Composable
-private fun InstagramGlyph(size: Dp) {
-    Canvas(Modifier.width(size).height(size)) {
-        val w = this.size.width
-        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.1f)
-        drawRoundRect(
-            Ink.Secondary,
-            topLeft = Offset(w * 0.06f, w * 0.06f),
-            size = androidx.compose.ui.geometry.Size(w * 0.88f, w * 0.88f),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(w * 0.26f),
-            style = stroke,
-        )
-        drawCircle(Ink.Secondary, w * 0.2f, Offset(w * 0.5f, w * 0.5f), style = stroke)
-        drawCircle(Ink.Secondary, w * 0.06f, Offset(w * 0.74f, w * 0.26f))
     }
 }
 

@@ -20,29 +20,21 @@ data class CityWeather(
     val days: List<DayForecast>,
 )
 
-/**
- * Public Instagram profile numbers. Logged-out Instagram only exposes the rounded follower figure
- * ("14K"), so [followersExact] is false unless the count is small enough to be shown in full.
- */
-data class InstagramStats(
-    val handle: String,
-    val followers: Long,
-    val followersExact: Boolean,
-    val posts: Long?,
-    /** Change versus the snapshot closest to 24 h ago; null until there is history or no change. */
-    val change24h: Long?,
-)
-
 private data class City(val name: String, val lat: Double, val lon: Double)
 
 /**
- * Live data for the dashboard: Open-Meteo forecasts and the public Instagram profile figures. Both keyless.
+ * Live data for the dashboard: Open-Meteo forecasts (keyless).
  * The last good response is cached so a short outage keeps showing real (recent) numbers; anything
  * older than [MAX_AGE_MS] is dropped rather than shown as current.
  */
 class DashboardData(context: Context) {
     private val prefs = context.getSharedPreferences("dashboard", Context.MODE_PRIVATE)
     private val http get() = sharedHttp
+
+    init {
+        // Instagram figures were removed; drop what earlier builds stored.
+        prefs.edit().remove("ig").remove("ig_at").remove("ig_history").apply()
+    }
 
     suspend fun weather(): List<CityWeather> = withContext(Dispatchers.IO) {
         CITIES.mapNotNull { city ->
@@ -55,44 +47,6 @@ class DashboardData(context: Context) {
             )?.also { save(key, it) } ?: cached(key)
             body?.let { runCatching { parseWeather(city.name, JSONObject(it)) }.getOrNull() }
         }
-    }
-
-    suspend fun instagram(handle: String): InstagramStats? = withContext(Dispatchers.IO) {
-        val html = fetch("https://www.instagram.com/$handle/", BROWSER_UA)
-        val parsed = html?.let(::parseOgDescription)?.also { save(KEY_IG, "${it.first}|${it.second}|${it.third ?: ""}") }
-            ?: cached(KEY_IG)?.split('|')?.let { p -> Triple(p[0].toLong(), p[1].toBoolean(), p.getOrNull(2)?.toLongOrNull()) }
-            ?: return@withContext null
-        val (followers, exact, posts) = parsed
-        InstagramStats(handle, followers, exact, posts, recordAndDiff(followers))
-    }
-
-    /** og:description looks like "14K Followers, 331 Following, 81 Posts - …" or "1,234 Followers, …". */
-    private fun parseOgDescription(html: String): Triple<Long, Boolean, Long?>? {
-        val content = OG_DESCRIPTION.find(html)?.groupValues?.get(1) ?: return null
-        val followers = FOLLOWERS.find(content) ?: return null
-        val posts = POSTS.find(content)?.let { scaled(it.groupValues[1], it.groupValues[2]) }
-        val suffix = followers.groupValues[2]
-        return Triple(scaled(followers.groupValues[1], suffix), suffix.isEmpty(), posts)
-    }
-
-    private fun scaled(number: String, suffix: String): Long {
-        val base = number.replace(",", "").toDouble()
-        val mult = when (suffix.lowercase()) { "k" -> 1_000.0; "m" -> 1_000_000.0; else -> 1.0 }
-        return Math.round(base * mult)
-    }
-
-    /** Keeps one snapshot per hour for two days and returns the change against ~24 h ago. */
-    private fun recordAndDiff(followers: Long): Long? {
-        val now = System.currentTimeMillis()
-        val hour = now / HOUR_MS
-        val history = prefs.getString(KEY_IG_HISTORY, "").orEmpty()
-            .split(';').mapNotNull { e -> e.split(':').takeIf { it.size == 2 }?.let { it[0].toLong() to it[1].toLong() } }
-            .filter { it.first > hour - 48 }
-            .toMutableList()
-        if (history.none { it.first == hour }) history += hour to followers
-        prefs.edit().putString(KEY_IG_HISTORY, history.joinToString(";") { "${it.first}:${it.second}" }).apply()
-        val past = history.filter { it.first <= hour - 20 }.maxByOrNull { it.first } ?: return null
-        return (followers - past.second).takeIf { it != 0L }
     }
 
     private fun parseWeather(name: String, o: JSONObject): CityWeather {
@@ -121,10 +75,8 @@ class DashboardData(context: Context) {
         )
     }
 
-    private fun fetch(url: String, userAgent: String? = null): String? = try {
-        val req = Request.Builder().url(url).header("Accept", if (userAgent == null) "application/json" else "text/html")
-            .apply { if (userAgent != null) header("User-Agent", userAgent) }
-            .build()
+    private fun fetch(url: String): String? = try {
+        val req = Request.Builder().url(url).header("Accept", "application/json").build()
         http.newCall(req).execute().use { r ->
             if (r.isSuccessful) r.body?.string() else null.also { Log.w(TAG, "HTTP ${r.code} for $url") }
         }
@@ -150,14 +102,7 @@ class DashboardData(context: Context) {
                 .readTimeout(10, TimeUnit.SECONDS)
                 .build()
         }
-        val OG_DESCRIPTION = Regex("""property="og:description" content="([^"]+)"""")
-        val FOLLOWERS = Regex("""([\d.,]+)([KkMm]?) Followers""")
-        val POSTS = Regex("""([\d.,]+)([KkMm]?) Posts""")
         const val TAG = "Dashboard"
-        const val KEY_IG = "ig"
-        const val KEY_IG_HISTORY = "ig_history"
-        const val HOUR_MS = 60L * 60 * 1000
-        const val BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15"
         const val MAX_AGE_MS = 12L * 60 * 60 * 1000
         val CITIES = listOf(
             City("بغداد", 33.3152, 44.3661),
