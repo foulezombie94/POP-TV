@@ -42,10 +42,7 @@ private data class City(val name: String, val lat: Double, val lon: Double)
  */
 class DashboardData(context: Context) {
     private val prefs = context.getSharedPreferences("dashboard", Context.MODE_PRIVATE)
-    private val http = OkHttpClient.Builder()
-        .connectTimeout(8, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .build()
+    private val http get() = sharedHttp
 
     suspend fun weather(): List<CityWeather> = withContext(Dispatchers.IO) {
         CITIES.mapNotNull { city ->
@@ -71,9 +68,9 @@ class DashboardData(context: Context) {
 
     /** og:description looks like "14K Followers, 331 Following, 81 Posts - …" or "1,234 Followers, …". */
     private fun parseOgDescription(html: String): Triple<Long, Boolean, Long?>? {
-        val content = Regex("""property="og:description" content="([^"]+)"""").find(html)?.groupValues?.get(1) ?: return null
-        val followers = Regex("""([\d.,]+)([KkMm]?) Followers""").find(content) ?: return null
-        val posts = Regex("""([\d.,]+)([KkMm]?) Posts""").find(content)?.let { scaled(it.groupValues[1], it.groupValues[2]) }
+        val content = OG_DESCRIPTION.find(html)?.groupValues?.get(1) ?: return null
+        val followers = FOLLOWERS.find(content) ?: return null
+        val posts = POSTS.find(content)?.let { scaled(it.groupValues[1], it.groupValues[2]) }
         val suffix = followers.groupValues[2]
         return Triple(scaled(followers.groupValues[1], suffix), suffix.isEmpty(), posts)
     }
@@ -146,6 +143,16 @@ class DashboardData(context: Context) {
     }
 
     private companion object {
+        /** One client (pool + dispatcher threads) for the process, not one per dream session. */
+        val sharedHttp: OkHttpClient by lazy {
+            OkHttpClient.Builder()
+                .connectTimeout(8, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .build()
+        }
+        val OG_DESCRIPTION = Regex("""property="og:description" content="([^"]+)"""")
+        val FOLLOWERS = Regex("""([\d.,]+)([KkMm]?) Followers""")
+        val POSTS = Regex("""([\d.,]+)([KkMm]?) Posts""")
         const val TAG = "Dashboard"
         const val KEY_IG = "ig"
         const val KEY_IG_HISTORY = "ig_history"

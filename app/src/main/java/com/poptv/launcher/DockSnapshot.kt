@@ -25,17 +25,24 @@ class DockSnapshot(context: Context, profile: String) {
     }.getOrDefault(emptyList())
 
     fun save(apps: List<AppEntry>) = runCatching {
+        val dock = apps.take(GridNav.COLUMNS)
         val rows = JSONArray()
-        apps.take(GridNav.COLUMNS).forEachIndexed { index, app ->
+        dock.forEach { app ->
+            rows.put(JSONObject().put("key", app.key).put("package", app.packageName).put("label", app.label)
+                .put("intent", app.launchIntent.toUri(0)).put("removable", app.isRemovable).put("pseudo", app.isPseudo))
+        }
+        val json = File(directory, "apps.json")
+        val text = rows.toString()
+        // Same dock as last time: skip re-encoding six PNGs on every reload.
+        if (json.exists() && runCatching { json.readText() }.getOrNull() == text) return@runCatching
+        dock.forEachIndexed { index, app ->
             val atomic = AtomicFile(File(directory, "$index.png"))
             val output = atomic.startWrite()
             try {
                 check(app.tile.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, output))
                 atomic.finishWrite(output)
             } catch (error: Exception) { atomic.failWrite(output); throw error }
-            rows.put(JSONObject().put("key", app.key).put("package", app.packageName).put("label", app.label)
-                .put("intent", app.launchIntent.toUri(0)).put("removable", app.isRemovable).put("pseudo", app.isPseudo))
         }
-        File(directory, "apps.json").writeText(rows.toString())
+        json.writeText(text)
     }
 }

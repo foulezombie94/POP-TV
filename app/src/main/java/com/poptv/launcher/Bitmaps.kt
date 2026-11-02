@@ -85,9 +85,11 @@ object Bitmaps {
 
     fun averageColor(src: Bitmap): Int {
         val small = Bitmap.createScaledBitmap(src, 12, 12, true)
+        val px = IntArray(12 * 12)
+        small.getPixels(px, 0, 12, 0, 0, 12, 12)
+        if (small !== src) small.recycle()
         var r = 0L; var g = 0L; var b = 0L; var n = 0L
-        for (y in 0 until 12) for (x in 0 until 12) {
-            val c = small.getPixel(x, y)
+        for (c in px) {
             if (Color.alpha(c) < 128) continue
             r += Color.red(c); g += Color.green(c); b += Color.blue(c); n++
         }
@@ -104,7 +106,9 @@ object Bitmaps {
         val w = BACKDROP_W
         val h = BACKDROP_H
         val px = IntArray(w * h)
-        Bitmap.createScaledBitmap(src, w, h, true).getPixels(px, 0, w, 0, 0, w, h)
+        val scaled = Bitmap.createScaledBitmap(src, w, h, true)
+        scaled.getPixels(px, 0, w, 0, 0, w, h)
+        if (scaled !== src) scaled.recycle()
         flipVertically(px, w, h)
         val hsv = FloatArray(3)
         for (i in px.indices) {

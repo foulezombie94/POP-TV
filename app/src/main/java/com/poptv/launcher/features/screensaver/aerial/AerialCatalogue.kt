@@ -30,9 +30,10 @@ internal class AerialCatalogue(context: Context) {
         readCached()?.takeIf { it.clips.isNotEmpty() }?.clips ?: readBundled()
     }
 
-    fun isStale(now: Long = System.currentTimeMillis()): Boolean {
+    /** Reads and parses the cached catalogue, so it runs on IO (callers are on the main thread). */
+    suspend fun isStale(now: Long = System.currentTimeMillis()): Boolean = withContext(Dispatchers.IO) {
         val fetchedAt = runCatching { if (file.exists()) JSONObject(file.readText()).optLong("fetchedAt") else 0L }.getOrDefault(0L)
-        return now - fetchedAt > REFRESH_MS || now < fetchedAt
+        now - fetchedAt > REFRESH_MS || now < fetchedAt
     }
 
     /** Downloads and parses Apple's feed; returns the new clips, or null on failure (logged). */

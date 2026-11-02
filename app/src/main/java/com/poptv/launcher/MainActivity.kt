@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
     private var click: ClickSound? = null
 
     private val packageReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) = vm.reload()
+        override fun onReceive(context: Context, intent: Intent) = vm.onPackagesChanged()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

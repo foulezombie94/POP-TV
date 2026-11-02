@@ -121,7 +121,11 @@ class SystemUiService : AccessibilityService() {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         // The cached banners are ~1 MB each; the box has 2 GB. Rebuild on next open instead.
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW && overlay == null) catalog = null
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW && overlay == null) {
+            catalog = null
+            // The process-wide entry cache holds the same bitmaps; drop it too or nothing is freed.
+            AppRepository.trimMemory()
+        }
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -129,7 +133,8 @@ class SystemUiService : AccessibilityService() {
         val pkg = event.packageName?.toString() ?: return
         // Pop's system launcher has priority 3, above the priority-0 cap for third-party apps.
         // Never disable Free: redirect its HOME window only while we own HOME and aren't recovering.
-        if (HomeRoutingPolicy.redirectStockHome(pkg, ownsHomeRole(), mainEnabled())) {
+        if (HomeRoutingPolicy.isStockHome(pkg) &&
+            HomeRoutingPolicy.redirectStockHome(pkg, ownsHomeRole(), mainEnabled())) {
             goHome()
             return
         }
@@ -274,7 +279,11 @@ class SystemUiService : AccessibilityService() {
         var opened = !pending.isCompleted && openSwitcher(cards)
         scope.launch {
             val entries = runCatching { pending.await() }
-                .onFailure { Log.e(TAG, "App catalog failed", it) }
+                .onFailure {
+                    Log.e(TAG, "App catalog failed", it)
+                    // Never keep a failed load: the next open retries instead of staying empty.
+                    if (catalog === pending) catalog = null
+                }
                 .getOrDefault(emptyList())
             cards.value = withContext(Dispatchers.IO) { buildCards(entries, sessionSnapshot, dismissedSnapshot) }
             if (!opened) opened = openSwitcher(cards)

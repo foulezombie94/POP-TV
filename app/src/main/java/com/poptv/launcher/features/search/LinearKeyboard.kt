@@ -1,12 +1,8 @@
 package com.poptv.launcher.features.search
 
 import android.view.KeyEvent as AndroidKeyEvent
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -318,12 +314,20 @@ fun SearchField(query: String, showCaret: Boolean, voiceAvailable: Boolean, modi
 }
 
 private const val VISIBLE_CHARS = 36
+private const val CARET_BLINK_MS = 530L
 private val FieldRingW = 1.5.dp
 
 @Composable
 private fun Caret() {
-    val t = rememberInfiniteTransition(label = "caret")
-    val a by t.animateFloat(1f, 0.15f, infiniteRepeatable(tween(560), RepeatMode.Reverse), label = "caretA")
+    // A stepped blink: two frames per second instead of an endless 60 fps transition.
+    var on by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(CARET_BLINK_MS)
+            on = !on
+        }
+    }
+    val a = if (on) 1f else 0.15f
     Box(
         Modifier
             .padding(start = 2.dp)

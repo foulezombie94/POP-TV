@@ -130,9 +130,16 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { prefs.state.collect(::applySettings) }
     }
 
-    fun reload() {
+    /**
+     * Package broadcasts arrive in bursts (an update sends REMOVED, ADDED and REPLACED; store
+     * auto-updates chain many): wait for the burst to settle and inventory once.
+     */
+    fun onPackagesChanged() = reload(settleMs = PACKAGE_SETTLE_MS)
+
+    fun reload(settleMs: Long = 0L) {
         appReload?.cancel()
         appReload = viewModelScope.launch {
+            if (settleMs > 0) delay(settleMs)
             val snapshot = DockSnapshot(getApplication(), activeProfile)
             if (!appsReady) {
                 val dock = withContext(Dispatchers.IO) { snapshot.read() }
@@ -657,6 +664,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         private const val FALLBACK_REGION = "US"
         private const val PRESS_MS = 120L
         private const val PREFETCH_DELAY_MS = 4_000L
+        private const val PACKAGE_SETTLE_MS = 600L
 
         fun barKey(slot: Int) = "bar:$slot"
         fun cardKey(rowId: String, titleId: String) = "card:$rowId/$titleId"

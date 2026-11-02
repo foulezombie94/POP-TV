@@ -4,6 +4,11 @@ import android.content.Context
 import android.util.Log
 import com.poptv.launcher.BuildConfig
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.Cache
 import okhttp3.HttpUrl
@@ -44,14 +49,17 @@ class TmdbClient private constructor(context: Context) {
         val json = if (fresh && cached != null) cached else {
             get(url("trending/all/week", mapOf("language" to "fr-FR")))?.also { response ->
                 val rows = response.optJSONArray("results") ?: JSONArray()
-                var enriched = 0
+                val picks = ArrayList<Pair<JSONObject, TmdbItem>>()
                 for (i in 0 until rows.length()) {
                     val row = rows.getJSONObject(i)
                     val title = parse(row, null) ?: continue
-                    if (title.mediaType !in setOf("movie", "tv") || title.backdropPath == null) continue
-                    row.put("home_logo", logoPath(title) ?: "")
-                    if (++enriched >= CarouselPolicy.COUNT) break
+                    if (title.mediaType !in MEDIA_TYPES || title.backdropPath == null) continue
+                    picks += row to title
+                    if (picks.size >= CarouselPolicy.COUNT) break
                 }
+                // The logos are independent lookups: fetch them together, not one after another.
+                val logos = coroutineScope { picks.map { (_, title) -> async { logoPath(title) } }.awaitAll() }
+                picks.forEachIndexed { i, (row, _) -> row.put("home_logo", logos[i] ?: "") }
                 runCatching { carouselCache.writeText(response.toString()) }
             } ?: cached
         }
@@ -60,7 +68,7 @@ class TmdbClient private constructor(context: Context) {
             val row = results.getJSONObject(it)
             parse(row, null)?.copy(homeLogo = row.optString("home_logo").takeIf { path -> path.startsWith("/") })
         }
-            .filter { it.mediaType in setOf("movie", "tv") && it.backdropPath != null }
+            .filter { it.mediaType in MEDIA_TYPES && it.backdropPath != null }
             .distinctBy { "${it.mediaType}/${it.id}" }.take(CarouselPolicy.COUNT)
     }
     private val http = OkHttpClient.Builder()
@@ -69,7 +77,11 @@ class TmdbClient private constructor(context: Context) {
         .readTimeout(12, TimeUnit.SECONDS)
         .build()
     private val genreNames = HashMap<Int, String>()
-    private val logoCache = HashMap<String, String?>()
+    /** Single-flight genre load, with a pause after a failure so offline calls don't each retry. */
+    private val genreLock = Mutex()
+    @Volatile private var genreRetryAt = 0L
+    /** Bounded: every title ever shown would otherwise stay here for the life of the process. */
+    private val logoCache = android.util.LruCache<String, Any>(LOGO_CACHE_SIZE)
 
     val isConfigured: Boolean get() = BuildConfig.TMDB_READ_TOKEN.isNotBlank()
 
@@ -130,7 +142,7 @@ class TmdbClient private constructor(context: Context) {
     /** Best English (or language-neutral) title-logo path, as tvOS Top Shelf shows logos, not text. */
     suspend fun logoPath(item: TmdbItem): String? {
         val key = "${item.mediaType}/${item.id}"
-        synchronized(logoCache) { if (key in logoCache) return logoCache[key] }
+        logoCache.get(key)?.let { return it as? String }
         val json = get(url("$key/images", mapOf("include_image_language" to "en,null"))) ?: return null
         val logos = json.optJSONArray("logos") ?: JSONArray()
         var best: String? = null
@@ -143,7 +155,7 @@ class TmdbClient private constructor(context: Context) {
                 best = l.optString("file_path")
             }
         }
-        synchronized(logoCache) { logoCache[key] = best }
+        logoCache.put(key, best ?: NO_LOGO)
         return best
     }
 
@@ -178,6 +190,13 @@ class TmdbClient private constructor(context: Context) {
 
     private suspend fun ensureGenres() {
         if (synchronized(genreNames) { genreNames.isNotEmpty() }) return
+        if (android.os.SystemClock.elapsedRealtime() < genreRetryAt) return
+        genreLock.withLock { loadGenres() }
+    }
+
+    private suspend fun loadGenres() {
+        if (synchronized(genreNames) { genreNames.isNotEmpty() }) return
+        if (android.os.SystemClock.elapsedRealtime() < genreRetryAt) return
         for (type in listOf("movie", "tv")) {
             val arr = get(url("genre/$type/list", emptyMap()))?.optJSONArray("genres") ?: continue
             synchronized(genreNames) {
@@ -186,6 +205,9 @@ class TmdbClient private constructor(context: Context) {
                     genreNames[g.getInt("id")] = g.getString("name")
                 }
             }
+        }
+        if (synchronized(genreNames) { genreNames.isEmpty() }) {
+            genreRetryAt = android.os.SystemClock.elapsedRealtime() + GENRE_RETRY_MS
         }
     }
 
@@ -198,7 +220,7 @@ class TmdbClient private constructor(context: Context) {
     private suspend fun get(url: HttpUrl): JSONObject? = withContext(Dispatchers.IO) {
         if (!isConfigured) return@withContext null
         val token = BuildConfig.TMDB_READ_TOKEN
-        val apiKey = token.matches(Regex("[a-fA-F0-9]{32}"))
+        val apiKey = token.matches(API_KEY)
         val authenticated = if (apiKey) url.newBuilder().addQueryParameter("api_key", token).build() else url
         val req = Request.Builder().url(authenticated)
             .apply { if (!apiKey) header("Authorization", "Bearer $token") }
@@ -227,6 +249,12 @@ class TmdbClient private constructor(context: Context) {
         private const val API = "https://api.themoviedb.org/3"
         private const val IMG = "https://image.tmdb.org/t/p"
         private const val CACHE_BYTES = 16L * 1024 * 1024
+        private const val LOGO_CACHE_SIZE = 256
+        private const val GENRE_RETRY_MS = 60_000L
+        /** LruCache refuses nulls: marks "looked up, has no logo". */
+        private val NO_LOGO = Any()
+        private val API_KEY = Regex("[a-fA-F0-9]{32}")
+        private val MEDIA_TYPES = setOf("movie", "tv")
 
         const val PROVIDER_NETFLIX = 8
         const val PROVIDER_PRIME = 9

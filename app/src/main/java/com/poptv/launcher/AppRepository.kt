@@ -47,8 +47,11 @@ class AppRepository(private val context: Context) {
         if (banner != null) {
             Bitmaps.render(banner, BANNER_W, BANNER_H)
         } else {
-            val iconBmp = Bitmaps.render(info.loadIcon(pm), ICON_PX, ICON_PX)
-            Bitmaps.iconPlate(info.loadIcon(pm), Bitmaps.averageColor(iconBmp))
+            val icon = info.loadIcon(pm)
+            val iconBmp = Bitmaps.render(icon, ICON_PX, ICON_PX)
+            val accent = Bitmaps.averageColor(iconBmp)
+            iconBmp.recycle()
+            Bitmaps.iconPlate(icon, accent)
         }
         }
         val category = Intent.CATEGORY_LEANBACK_LAUNCHER.takeIf { isLeanback } ?: Intent.CATEGORY_LAUNCHER
@@ -105,6 +108,12 @@ class AppRepository(private val context: Context) {
         @Volatile private var snapshot: List<AppEntry> = emptyList()
         private val entriesCache = android.util.LruCache<String, AppEntry>(60)
         const val SETTINGS_KEY = "poptv:settings"
+
+        /**
+         * Drops the decoded entries kept for fast reloads. Live screens keep their own list; the
+         * next load decodes the tiles again from the on-disk art cache.
+         */
+        fun trimMemory() = entriesCache.evictAll()
         const val SEARCH_KEY = "poptv:search"
         private const val TAG = "PopTv"
         private const val BANNER_W = 320
